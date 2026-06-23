@@ -4,12 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
 
 
-connectDB();
-
 // Get single post
 export async function GET(request: NextRequest, { params }: { params: { postid: string } }) {
     try {
-        // console.log("Fetched post:", params);
+        await connectDB();
         const post = await CommunityPost.findById(params.postid)
             .populate("user", "username rank")
             .populate("comments.user", "username profilePic rank");
@@ -30,7 +28,8 @@ export async function GET(request: NextRequest, { params }: { params: { postid: 
 
 export async function DELETE(request: NextRequest, { params }: { params: { postid: string } }) {
     try {
-        const userId = await getDataFromToken(request);
+        await connectDB();
+        const userId = getDataFromToken(request);
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }

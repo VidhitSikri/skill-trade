@@ -2,14 +2,20 @@ import { connectDB } from "@/dbconfig/dbconfig";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 
-connectDB();
-
+// POST /api/users/verifyemail
+// Body: { token: string }
 export async function POST(request: NextRequest) {
   try {
+    await connectDB();
+
     const reqBody = await request.json();
     const { token } = reqBody;
-    console.log(`this is the token in login ${token}`);
 
+    if (!token) {
+      return NextResponse.json({ error: "Token is required" }, { status: 400 });
+    }
+
+    // Find user with valid, non-expired token
     const user = await User.findOne({
       verifyToken: token,
       verifyTokenExpiry: { $gt: Date.now() },
@@ -17,41 +23,24 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid or expired token" },
+        { error: "Invalid or expired verification token. Please request a new one." },
         { status: 400 }
       );
     }
 
-    console.log(`this is the user in login ${user}`);
-
-    // Update user fields
+    // Mark user as verified and clear token fields
     user.isVerified = true;
     user.verifyToken = undefined;
     user.verifyTokenExpiry = undefined;
 
-    // Save user and handle errors
-    try {
-      console.log("Saving user:", user);
-      await user.save();
-      console.log("after saving :", user);
-      console.log("User saved successfully:", user);
-    } catch (error) {
-      console.error("Error saving user:", error);
-      return NextResponse.json(
-        { error: "Failed to update user" },
-        { status: 500 }
-      );
-    }
+    await user.save();
 
     return NextResponse.json(
-      { message: "Email verified successfully", success: true },
+      { message: "Email verified successfully! You can now log in.", success: true },
       { status: 200 }
     );
-  } catch (error) {
-    console.error("Something went wrong:", error);
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error("Verify email error:", error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

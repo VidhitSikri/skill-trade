@@ -3,11 +3,11 @@ import { getDataFromToken } from "@/helpers/getDataFromToken";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 
-connectDB()
 
 export async function GET(request: NextRequest) {
-  // extract data from token 
-  const userId = await getDataFromToken(request)
+  // extract data from token
+  await connectDB();
+  const userId = getDataFromToken(request)
   const user = await User.findOne({ _id: userId }).select("-password -verifyToken -verifyTokenExpiry -__v")
 
   if (!user) {
@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getDataFromToken(request);
+    await connectDB();
+    const userId = getDataFromToken(request);
     console.log("User ID from token:", userId);
 
     const reqBody = await request.json();

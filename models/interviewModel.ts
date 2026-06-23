@@ -3,11 +3,14 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IInterview extends Document {
   userId: string;
   role: string;
-  type: string; // e.g., "Technical", "Behavioral", "Portfolio"
+  type: string;
   techstack: string[];
-  level: string; // e.g., "Junior", "Mid-level", "Senior"
+  level: string;
   questions: string[];
+  answers: Record<string, string>;
+  feedback: Record<string, string>;
   finalized: boolean;
+  completedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +47,20 @@ const interviewSchema: Schema = new mongoose.Schema(
     finalized: {
       type: Boolean,
       default: false,
+    },
+    answers: {
+      type: Map,
+      of: String,
+      default: {},
+    },
+    feedback: {
+      type: Map,
+      of: String,
+      default: {},
+    },
+    completedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

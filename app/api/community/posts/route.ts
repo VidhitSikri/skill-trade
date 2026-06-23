@@ -3,11 +3,11 @@ import { getDataFromToken } from "@/helpers/getDataFromToken";
 import CommunityPost from "@/models/communityPostModel";
 import { NextRequest, NextResponse } from "next/server";
 
-connectDB();
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getDataFromToken(request);
+    await connectDB();
+    const userId = getDataFromToken(request);
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { content, tags } = await request.json();
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    await connectDB();
     const posts = await CommunityPost.find({})
       .populate("user", "username rank")
       .populate("comments.user", "username profilePic rank")

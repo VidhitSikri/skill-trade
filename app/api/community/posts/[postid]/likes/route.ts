@@ -4,12 +4,12 @@ import CommunityPost from "@/models/communityPostModel";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-connectDB();
 
 export async function POST(request: NextRequest, { params }: { params: { postid: string } }) {
     try {
+        await connectDB();
         // Verify user authentication
-        const userId = await getDataFromToken(request);
+        const userId = getDataFromToken(request);
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
